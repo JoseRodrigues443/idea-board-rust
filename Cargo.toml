@@ -1,0 +1,19 @@
+[package]
+name = "idea_api"
+version = "0.1.0"
+edition = "2021"
+authors = ["José Rodrigues <josemiguel443@gmail.com>"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = "3"
+actix-rt = "1.1.0"
+serde = "1.0.106"
+serde_json = "1.0.51"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "0.6", features = ["serde", "v4"] }
+env_logger = "0.7.1"
+diesel = { version = "1.4.4", features = ["postgres", "r2d2", "chrono", "uuid"] }
+r2d2 = "0.8.8"
+r2d2-diesel = "1.0.0"
