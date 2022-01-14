@@ -6,7 +6,7 @@ use diesel::{ExpressionMethods, Insertable, Queryable, RunQueryDsl};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::constants::{APPLICATION_JSON, CONNECTION_POOL_ERROR};
+use crate::constants::{APPLICATION_JSON, CONNECTION_POOL_ERROR, REQUEST_TOTAL};
 use crate::like::{list_likes, Like};
 use crate::response::Response;
 use crate::{DBPool, DBPooledConnection};
@@ -42,6 +42,7 @@ impl Idea {
             id: Uuid::new_v4(),
             created_at: Utc::now().naive_utc(),
             message: self.message.clone(),
+            image: self.image.clone(),
         }
     }
 
@@ -50,6 +51,7 @@ impl Idea {
             id: self.id.clone(),
             created_at: self.created_at.clone(),
             message: self.message.clone(),
+            image: self.image.clone(),
             likes,
         }
     }
@@ -61,6 +63,7 @@ pub struct IdeaDB {
     pub id: Uuid,
     pub created_at: NaiveDateTime,
     pub message: String,
+    pub image: String,
 }
 
 impl IdeaDB {
@@ -69,6 +72,7 @@ impl IdeaDB {
             id: self.id.to_string(),
             created_at: Utc.from_utc_datetime(&self.created_at),
             message: self.message.clone(),
+            image: self.image.clone(),
             likes: vec![],
         }
     }
@@ -82,7 +86,7 @@ pub struct IdeaRequest {
 impl IdeaRequest {
     pub fn to_idea(&self) -> Option<Idea> {
         match &self.message {
-            Some(message) => Some(Idea::new(message.to_string())),
+            Some(message) => Some(Idea::new(message.to_string(), message.to_string())),
             None => None,
         }
     }
@@ -140,11 +144,11 @@ fn delete_idea(_id: Uuid, conn: &DBPooledConnection) -> Result<(), Error> {
     }
 }
 
-/// list 50 last ideas `/ideas`
+/// list REQUEST_TOTAL last ideas `/ideas`
 #[get("/ideas")]
 pub async fn list(pool: Data<DBPool>) -> HttpResponse {
     let conn = pool.get().expect(CONNECTION_POOL_ERROR);
-    let mut ideas = web::block(move || list_ideas(50, &conn)).await.unwrap();
+    let mut ideas = web::block(move || list_ideas(REQUEST_TOTAL, &conn)).await.unwrap();
 
     let conn = pool.get().expect(CONNECTION_POOL_ERROR);
     let ideas_with_likes = Ideas {
@@ -180,10 +184,10 @@ pub async fn create(idea_req: Json<IdeaRequest>, pool: Data<DBPool>) -> HttpResp
 
 /// find a idea by its id `/ideas/{id}`
 #[get("/ideas/{id}")]
-pub async fn get(path: Path<(String,)>, pool: Data<DBPool>) -> HttpResponse {
+pub async fn get(Path(id): Path<String>, pool: Data<DBPool>) -> HttpResponse {
     let conn = pool.get().expect(CONNECTION_POOL_ERROR);
     let idea =
-        web::block(move || find_idea(Uuid::from_str(path.0.as_str()).unwrap(), &conn)).await;
+        web::block(move || find_idea(Uuid::from_str(&id).unwrap(), &conn)).await;
 
     match idea {
         Ok(idea) => {
@@ -203,11 +207,11 @@ pub async fn get(path: Path<(String,)>, pool: Data<DBPool>) -> HttpResponse {
 
 /// delete a idea by its id `/ideas/{id}`
 #[delete("/ideas/{id}")]
-pub async fn delete(path: Path<(String,)>, pool: Data<DBPool>) -> HttpResponse {
+pub async fn delete(Path(id): Path<String>, pool: Data<DBPool>) -> HttpResponse {
     // in any case return status 204
     let conn = pool.get().expect(CONNECTION_POOL_ERROR);
 
-    let _ = web::block(move || delete_idea(Uuid::from_str(path.0.as_str()).unwrap(), &conn)).await;
+    let _ = web::block(move || delete_idea(Uuid::from_str(&id).unwrap(), &conn)).await;
 
     HttpResponse::NoContent()
         .content_type(APPLICATION_JSON)

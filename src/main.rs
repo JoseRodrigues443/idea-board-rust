@@ -3,6 +3,9 @@ extern crate actix_web;
 #[macro_use]
 extern crate diesel;
 
+extern crate dotenv;
+
+use dotenv::dotenv;
 use std::{env, io};
 
 use actix_web::{middleware, App, HttpServer};
@@ -16,11 +19,14 @@ mod response;
 mod schema;
 mod idea;
 
+use crate::constants::{ADDRESS};
+
 pub type DBPool = Pool<ConnectionManager<PgConnection>>;
 pub type DBPooledConnection = PooledConnection<ConnectionManager<PgConnection>>;
 
 #[actix_rt::main]
 async fn main() -> io::Result<()> {
+    dotenv().ok(); // load from .env file
     env::set_var("RUST_LOG", "actix_web=debug,actix_server=info");
     env_logger::init();
 
@@ -46,7 +52,7 @@ async fn main() -> io::Result<()> {
             .service(like::plus_one)
             .service(like::minus_one)
     })
-    .bind("0.0.0.0:9090")?
+    .bind(ADDRESS)?
     .run()
     .await
 }

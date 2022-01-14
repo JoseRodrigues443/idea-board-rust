@@ -110,13 +110,13 @@ pub fn delete_like(_idea_id: Uuid, conn: &DBPooledConnection) -> Result<(), Erro
     }
 }
 
-/// list last 50 likes from a idea `/ideas/{id}/likes`
+/// list last REQUEST_TOTAL likes from a idea `/ideas/{id}/likes`
 #[get("/ideas/{id}/likes")]
-pub async fn list(path: Path<(String,)>, pool: Data<DBPool>) -> HttpResponse {
+pub async fn list(Path(id): Path<String>, pool: Data<DBPool>) -> HttpResponse {
     let conn = pool.get().expect(CONNECTION_POOL_ERROR);
 
     let likes =
-        web::block(move || list_likes(Uuid::from_str(path.0.as_str()).unwrap(), &conn)).await;
+        web::block(move || list_likes(Uuid::from_str(&id).unwrap(), &conn)).await;
 
     match likes {
         Ok(likes) => HttpResponse::Ok()
@@ -130,11 +130,11 @@ pub async fn list(path: Path<(String,)>, pool: Data<DBPool>) -> HttpResponse {
 
 /// add one like to a idea `/ideas/{id}/likes`
 #[post("/ideas/{id}/likes")]
-pub async fn plus_one(path: Path<(String,)>, pool: Data<DBPool>) -> HttpResponse {
+pub async fn plus_one(Path(id): Path<String>, pool: Data<DBPool>) -> HttpResponse {
     let conn = pool.get().expect(CONNECTION_POOL_ERROR);
 
     let like =
-        web::block(move || create_like(Uuid::from_str(path.0.as_str()).unwrap(), &conn)).await;
+        web::block(move || create_like(Uuid::from_str(&id).unwrap(), &conn)).await;
 
     match like {
         Ok(like) => HttpResponse::Ok().content_type(APPLICATION_JSON).json(like),
@@ -144,11 +144,11 @@ pub async fn plus_one(path: Path<(String,)>, pool: Data<DBPool>) -> HttpResponse
 
 /// remove one like from a idea `/ideas/{id}/likes`
 #[delete("/ideas/{id}/likes")]
-pub async fn minus_one(path: Path<(String,)>, pool: Data<DBPool>) -> HttpResponse {
+pub async fn minus_one(Path(id): Path<String>, pool: Data<DBPool>) -> HttpResponse {
     // in any case return status 204
     let conn = pool.get().expect(CONNECTION_POOL_ERROR);
 
-    let _ = web::block(move || delete_like(Uuid::from_str(path.0.as_str()).unwrap(), &conn)).await;
+    let _ = web::block(move || delete_like(Uuid::from_str(&id).unwrap(), &conn)).await;
 
     HttpResponse::NoContent()
         .content_type(APPLICATION_JSON)

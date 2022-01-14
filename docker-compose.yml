@@ -1,0 +1,33 @@
+version: "3.1"
+
+services:
+  postgres:
+    image: postgres
+    container_name: idea-db
+    working_dir: /application
+    volumes:
+      - .:/application
+    environment:
+      - POSTGRES_USER=idea
+      - POSTGRES_PASSWORD=ideas
+      - POSTGRES_DB=ideas
+    ports:
+      - "5432:5432"
+    networks:
+      - base
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@admin.io"
+      PGADMIN_DEFAULT_PASSWORD: "Admin443!"
+    ports:
+      - "16543:80"
+    depends_on:
+      - postgres
+    networks:
+      - base
+
+networks:
+  base:
+    driver: bridge
