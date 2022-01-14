@@ -1,0 +1,76 @@
+{
+	"info": {
+		"_postman_id": "d531913c-879f-4bf3-9530-52430203ea7e",
+		"name": "Idea",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "ideas",
+			"item": [
+				{
+					"name": "Get All ideias",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/ideas",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"ideas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All ideias by Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/ideas/12",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"ideas",
+								"12"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "host",
+			"value": "https://localhost:9000",
+			"type": "string"
+		}
+	]
+}
